@@ -1,5 +1,5 @@
 # TodoistNotion 
-A DIY Todoist Notion integration because I why just use one. 
+A DIY Todoist Notion integration because why just use one. 
 
 ## Author 
 * ** Vlad Munteanu ** 
