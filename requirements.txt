@@ -1,0 +1,8 @@
+canvasapi==2.1.0
+certifi==2020.12.5
+chardet==4.0.0
+idna==2.10
+pytz==2020.5
+requests==2.25.1
+todoist-python==8.1.3
+urllib3==1.26.2
