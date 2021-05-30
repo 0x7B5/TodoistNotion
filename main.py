@@ -50,17 +50,10 @@ def getNotionToken():
 
 
 def convertToUTC(date):
-    # METHOD 2: Auto-detect zones:
     from_zone = tz.tzutc()
     to_zone = tz.tzlocal()
-
-    # Tell the datetime object that it's in UTC time zone since
-    # datetime objects are 'naive' by default
     temp_date = date.replace(tzinfo=from_zone)
-
-    # Convert time zone
     central = temp_date.astimezone(to_zone)
-
     return central
 
 def getCanvasEvents():
@@ -68,38 +61,46 @@ def getCanvasEvents():
     canvas = Canvas(API_URL, getCanvasToken())
     events = canvas.get_upcoming_events()
 
-    events_dict = {}
+    canvas_todo = []
 
     for item in events:
         if 'assignment' in item:
             date = parser.parse(item['assignment']['due_at'])
-
-            # formated_date = "{}-{}-{} {}:{}".format(date.year,
-            # date.month, date.day, date.hour, date.minute)
             formated_date = "{}-{}-{} {}:{}:{}".format(
                 date.year, date.month, date.day, date.hour, date.minute, date.second)
             formated_date = convertToUTC(date)
-            # formated_date = time.strftime("%Y-%m-%dT%H:%M:%SZ", date)
 
             title = item['title']
+            canvas_todo.append([title, formated_date])
 
-            if formated_date in events_dict:
-                events_dict[formated_date].append(title)
-            else:
-                events_dict[formated_date] = [title]
-    return events_dict
+    return canvas_todo
 
 def getNotionList(token, url): 
     client = NotionClient(token)
     page = client.get_collection_view(url)
-
+  
+    notion_todo = []
     for row in page.collection.get_rows(): 
-        #print(row)
         row_date = row.due_date 
 
+        if row.done == True: 
+          continue
         if row_date != None: 
             row_date = row_date.start
-        print("{}: {}, {}".format(row.task_name, row_date, row.done))
+        notion_todo.append([row.task_name, row_date])
+    
+    return notion_todo
+
+        
+
+def getTodoistList(token):
+    api = todoist.TodoistAPI(token)
+    todoist_list = []
+    items = api.state["items"]
+    for item in items:
+      todoist_list.append([item["content"], item["due"]['date']])
+    
+    return todoist_list
 
 def main(): 
     notion_tok = getNotionToken()
@@ -109,7 +110,15 @@ def main():
 
     if notion_tok != "" and todoist_tok != "" and canvas_tok != "" and notion_page != "":
         notion_list = getNotionList(notion_tok, notion_page)
-        # print(getCanvasEvents())
+        print(notion_list)
+        todoist_list = getTodoistList(todoist_tok)
+        print(todoist_list)
+        canvas_list = getCanvasEvents()
+        print(canvas_list)
+
+
+
+
         
 
 
